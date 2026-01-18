@@ -1,6 +1,3 @@
-
-package lfInstallmentPlan;
-
 import java.util.Scanner;
 
 /**
