@@ -2,7 +2,7 @@
 A java installment loan calculator library
 that calculates the monthly installment amounts for a loan.
 
-![sample](./assets/loan-example.jpg)
+![sample](assets/loan-example.jpg)
 
 ## Features
 
@@ -130,5 +130,5 @@ Total             | 11.245,48 | 11.000,00 | 245,48    |
 
 ## License
 
-This project is licensed under the [MIT License](LICENSE). Feel free to use, modify, and distribute the code for personal or commercial purposes.
+This project is licensed under the [MIT License](../LICENSE). Feel free to use, modify, and distribute the code for personal or commercial purposes.
 
