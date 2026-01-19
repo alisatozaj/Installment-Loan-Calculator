@@ -68,8 +68,12 @@ public class Plan {
     }
 
     public void setNumberOfInstallments(int numberOfInstallments) {
+        if (numberOfInstallments <= 0) {
+            throw new IllegalArgumentException("numberOfInstallments must be > 0");
+        }
         this.numberOfInstallments = numberOfInstallments;
     }
+
 
     public void setInterestRate(double feePercentage) {
         this.interestRatePerYear = feePercentage;
@@ -86,7 +90,7 @@ public class Plan {
     
     public void setFirstDueDate(Date firstDueDate) {
         this.firstDueDate = firstDueDate;
-    }    
+    }
 
     public int getNumberOfInstallments() {
         return numberOfInstallments;
