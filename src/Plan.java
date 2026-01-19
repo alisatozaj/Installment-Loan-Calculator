@@ -5,7 +5,7 @@ import java.util.List;
  *
  * @author Luca and Friends :: github.com/lfriends
  */
-public class Plan {
+public final class Plan {
     
 
     private int numberOfInstallments; 
@@ -18,7 +18,8 @@ public class Plan {
     private double singleInstallmentAmount;
     private java.util.Date firstDueDate;
     private java.util.Date lastDueDate;
-    final int numberOfDecimals =2 ;
+    public static final int NUMBER_OF_DECIMALS = 2;
+
 
     java.util.List<Installment> installments ;
 
@@ -47,11 +48,11 @@ public class Plan {
         netPrincipalAmount -= advancePaymentAmount;
         
         if (getInterestRatePerMonth()>0){
-            singleInstallmentAmount = Utils.myRound( netPrincipalAmount * getInterestRatePerMonth() /  (1- Math.pow(1+getInterestRatePerMonth() , -numberOfInstallments) ) , numberOfDecimals );
+            singleInstallmentAmount = Utils.myRound( netPrincipalAmount * getInterestRatePerMonth() /  (1- Math.pow(1+getInterestRatePerMonth() , -numberOfInstallments) ) , NUMBER_OF_DECIMALS );
             totalAmount = singleInstallmentAmount * numberOfInstallments + advancePaymentAmount ;
-            interestAmount = Utils.myRound( totalAmount - principalAmount, numberOfDecimals ) ;
+            interestAmount = Utils.myRound( totalAmount - principalAmount, NUMBER_OF_DECIMALS ) ;
         }else{
-            singleInstallmentAmount = Utils.myRound( netPrincipalAmount / numberOfInstallments  , numberOfDecimals );
+            singleInstallmentAmount = Utils.myRound( netPrincipalAmount / numberOfInstallments  , NUMBER_OF_DECIMALS );
             totalAmount= netPrincipalAmount + advancePaymentAmount ;
             interestAmount=0;
         }

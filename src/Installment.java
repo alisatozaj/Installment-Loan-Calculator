@@ -27,13 +27,13 @@ public class Installment {
         if (number>1)prevInstallment=plan.getInstallments().get(currentInstallmentNumber-2);
         
         if (firstIntallment){
-            principal = Utils.myRound( plan.getSingleInstallmentAmount() - (plan.getPrincipalAmount()-plan.getAdvancePaymentAmount() )* plan.getInterestRatePerMonth()  , plan.numberOfDecimals );
+            principal = Utils.myRound( plan.getSingleInstallmentAmount() - (plan.getPrincipalAmount()-plan.getAdvancePaymentAmount() )* plan.getInterestRatePerMonth()  , plan.NUMBER_OF_DECIMALS );
         }else{
-            principal = Utils.myRound(prevInstallment .principal * (1 + plan.getInterestRatePerMonth() ) , plan.numberOfDecimals );
+            principal = Utils.myRound(prevInstallment .principal * (1 + plan.getInterestRatePerMonth() ) , plan.NUMBER_OF_DECIMALS );
         }
         
         if (plan.getInterestRatePerMonth()>0){
-            interests = Utils.myRound( plan.getSingleInstallmentAmount() - principal , plan.numberOfDecimals );
+            interests = Utils.myRound( plan.getSingleInstallmentAmount() - principal , plan.NUMBER_OF_DECIMALS );
         }else{
             interests = 0 ;
             total = principal;
@@ -41,7 +41,7 @@ public class Installment {
         
         // last installment round correction 
         if (lastInstallment){
-            principal = Utils.myRound( prevInstallment.outstandingPrincipal , plan.numberOfDecimals );
+            principal = Utils.myRound( prevInstallment.outstandingPrincipal , plan.NUMBER_OF_DECIMALS );
             interests = prevInstallment.outstandingInterests ;
         }
             
@@ -140,13 +140,13 @@ public class Installment {
         boolean lastInstallment = plan!=null && number==plan.getNumberOfInstallments() ;
         
         if (firstIntallment){
-            debtPaid =  Utils.myRound( principal , plan.numberOfDecimals ) ;       
-            outstandingPrincipal = Utils.myRound( plan.getPrincipalAmount()-principal - plan.getAdvancePaymentAmount() , plan.numberOfDecimals ) ; 
-            outstandingInterests =  Utils.myRound( plan.getInterestAmount()  - interests , plan.numberOfDecimals ) ; 
+            debtPaid =  Utils.myRound( principal , plan.NUMBER_OF_DECIMALS ) ;
+            outstandingPrincipal = Utils.myRound( plan.getPrincipalAmount()-principal - plan.getAdvancePaymentAmount() , plan.NUMBER_OF_DECIMALS ) ;
+            outstandingInterests =  Utils.myRound( plan.getInterestAmount()  - interests , plan.NUMBER_OF_DECIMALS ) ;
         }else{
-            debtPaid = Utils.myRound( prevInstallment.debtPaid + principal, plan.numberOfDecimals );
-            outstandingPrincipal = Utils.myRound( prevInstallment.outstandingPrincipal - principal , plan.numberOfDecimals );
-            outstandingInterests =  Utils.myRound( prevInstallment.outstandingInterests  - interests, plan.numberOfDecimals );
+            debtPaid = Utils.myRound( prevInstallment.debtPaid + principal, plan.NUMBER_OF_DECIMALS );
+            outstandingPrincipal = Utils.myRound( prevInstallment.outstandingPrincipal - principal , plan.NUMBER_OF_DECIMALS );
+            outstandingInterests =  Utils.myRound( prevInstallment.outstandingInterests  - interests, plan.NUMBER_OF_DECIMALS );
         }
         
         if (lastInstallment){
