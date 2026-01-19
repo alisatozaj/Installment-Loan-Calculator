@@ -1,12 +1,7 @@
 import java.util.Date;
 import java.util.List;
 
-/**
- *
- * @author Luca and Friends :: github.com/lfriends
- */
 public final class Plan {
-    
 
     private int numberOfInstallments; 
     private double interestRatePerYear;

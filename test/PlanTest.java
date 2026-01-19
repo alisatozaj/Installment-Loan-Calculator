@@ -90,4 +90,26 @@ class PlanTest {
                 () -> new Plan(1000.0, 0, 10.0, new Date())
         );
     }
+
+    @Test
+    void toStringAsTable_smallTotal_shouldStillRenderTableAndHeaders() {
+        Plan plan = new Plan(10.0, 6, 10.0, new Date()); // use n=6 (known stable in your suite)
+
+        String table = plan.toStringAsTable();
+
+        assertTrue(table.contains("Month"), "Table should contain header 'Month'.\n" + table);
+        assertTrue(table.contains("Due date"), "Table should contain header 'Due date'.\n" + table);
+        assertTrue(table.contains("Total"), "Table should contain footer 'Total'.\n" + table);
+    }
+
+
+    @Test
+    void getInstallments_shouldReturnUnmodifiableList() {
+        Plan plan = new Plan(1000.0, 6, 10.0, new Date());
+
+        assertThrows(UnsupportedOperationException.class, () -> plan.getInstallments().add(null));
+    }
+
 }
+
+
