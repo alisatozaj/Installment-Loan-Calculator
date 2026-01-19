@@ -69,9 +69,10 @@ public class Plan {
 
     public void setNumberOfInstallments(int numberOfInstallments) {
         if (numberOfInstallments <= 0) {
-            throw new IllegalArgumentException("numberOfInstallments must be > 0");
+            throw new IllegalArgumentException("numberOfInstallments must be greater than 0");
+        } else {
+            this.numberOfInstallments = numberOfInstallments;
         }
-        this.numberOfInstallments = numberOfInstallments;
     }
 
 
@@ -87,10 +88,16 @@ public class Plan {
     public void setAdvancePaymentAmount(double advancePaymentAmount) {
         this.advancePaymentAmount = advancePaymentAmount;
     }
-    
+
     public void setFirstDueDate(Date firstDueDate) {
-        this.firstDueDate = firstDueDate;
+        if (firstDueDate == null) {
+            this.firstDueDate = null;
+        } else {
+            this.firstDueDate = new Date(firstDueDate.getTime());
+        }
     }
+
+
 
     public int getNumberOfInstallments() {
         return numberOfInstallments;
@@ -125,16 +132,28 @@ public class Plan {
     }
 
     public Date getFirstDueDate() {
-        return firstDueDate;
+        if (this.firstDueDate == null) {
+            return null;
+        } else {
+            return new Date(this.firstDueDate.getTime());
+        }
     }
 
     public Date getLastDueDate() {
-        return lastDueDate;
+        if (this.lastDueDate == null) {
+            return null;
+        } else {
+            return new Date(this.lastDueDate.getTime());
+        }
+    }
+    public List<Installment> getInstallments() {
+        if (this.installments == null) {
+            return List.of();
+        } else {
+            return java.util.Collections.unmodifiableList(this.installments);
+        }
     }
 
-    public List<Installment> getInstallments() {
-        return installments;
-    }
 
     @Override
     public String toString() {
