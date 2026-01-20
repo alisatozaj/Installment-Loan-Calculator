@@ -1,160 +1,103 @@
+import org.junit.jupiter.api.Test;
+
+import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.*;
 
-/**
- *
- * @author Luca and Friends :: github.com/lfriends
- */
-public class Installment {
-    
-    private final int number;
-    private double total;
-    private double principal;
-    private double interests;
-    private double outstandingPrincipal ;
-    private double outstandingInterests; 
-    private double debtPaid; 
-    private final java.util.Date dueDate;
+class InstallmentTest {
 
-    public Installment(Plan plan, int currentInstallmentNumber ) {
-        
-        this.number = currentInstallmentNumber;
-        this.total = plan.getSingleInstallmentAmount();
-        boolean firstIntallment = currentInstallmentNumber==1 ;
-        boolean lastInstallment = plan!=null && currentInstallmentNumber==plan.getNumberOfInstallments() ;
-        
-        Installment prevInstallment = null ;
-        if (number>1)prevInstallment=plan.getInstallments().get(currentInstallmentNumber-2);
-        
-        if (firstIntallment){
-            principal = Utils.myRound( plan.getSingleInstallmentAmount() - (plan.getPrincipalAmount()-plan.getAdvancePaymentAmount() )* plan.getInterestRatePerMonth()  , plan.NUMBER_OF_DECIMALS );
-        }else{
-            principal = Utils.myRound(prevInstallment .principal * (1 + plan.getInterestRatePerMonth() ) , plan.NUMBER_OF_DECIMALS );
+    private Date dateOf(int year, int month0Based, int day) {
+        Calendar c = Calendar.getInstance();
+        c.set(year, month0Based, day, 0, 0, 0);
+        c.set(Calendar.MILLISECOND, 0);
+        return c.getTime();
+    }
+
+    @Test
+    void installment_firstDueDate_shouldMatchPlanFirstDueDate() {
+        Date firstDue = dateOf(2025, Calendar.JANUARY, 15);
+        Plan plan = new Plan(1000.0, 6, 10.0, firstDue);
+
+        List<Installment> list = plan.getInstallments();
+        assertFalse(list.isEmpty());
+
+        Installment first = list.get(0);
+
+        assertEquals(plan.getFirstDueDate().getTime(), first.getDueDate().getTime());
+    }
+
+    @Test
+    void installment_count_shouldEqualNumberOfInstallments() {
+        Plan plan = new Plan(1200.0, 12, 12.0, new Date());
+        assertEquals(12, plan.getInstallments().size());
+    }
+
+    @Test
+    void debtPaid_shouldIncrease_and_outstandingPrincipal_shouldDecrease_overTime() {
+        Plan plan = new Plan(1000.0, 6, 10.0, new Date());
+        List<Installment> ins = plan.getInstallments();
+
+        Installment i1 = ins.get(0);
+        Installment i2 = ins.get(1);
+
+        assertTrue(i2.getDebtPaid() > i1.getDebtPaid(), "Debt paid should increase each month");
+        assertTrue(i2.getOutstandingPrincipal() < i1.getOutstandingPrincipal(),
+                "Outstanding principal should decrease each month");
+    }
+
+    @Test
+    void lastInstallment_shouldHaveZeroOutstandingPrincipal_and_zeroOutstandingInterests() {
+        Plan plan = new Plan(1000.0, 6, 10.0, new Date());
+        List<Installment> ins = plan.getInstallments();
+
+        Installment last = ins.get(ins.size() - 1);
+
+        assertEquals(0.0, last.getOutstandingPrincipal(), 0.0001);
+        assertEquals(0.0, last.getOutstandingInterests(), 0.0001);
+    }
+
+    @Test
+    void interestRateZero_shouldProduceZeroInterestPerInstallment() {
+        Plan plan = new Plan(1200.0, 12, 0.0, new Date());
+        for (Installment i : plan.getInstallments()) {
+            assertEquals(0.0, i.getInterestAmount(), 0.0001);
         }
-        
-        if (plan.getInterestRatePerMonth()>0){
-            interests = Utils.myRound( plan.getSingleInstallmentAmount() - principal , plan.NUMBER_OF_DECIMALS );
-        }else{
-            interests = 0 ;
-            total = principal;
-        }
-        
-        // last installment round correction 
-        if (lastInstallment){
-            principal = Utils.myRound( prevInstallment.outstandingPrincipal , plan.NUMBER_OF_DECIMALS );
-            interests = prevInstallment.outstandingInterests ;
-        }
-            
-        total = principal + interests ;
-                
-        if (currentInstallmentNumber==1){
-            dueDate = plan.getFirstDueDate();
-        }else{
-            int day = Utils.getDayOfMonth( plan.getFirstDueDate() );
-            java.util.Date newDate = Utils.getFirstDayOfMonth( plan.getFirstDueDate() );
-            newDate = Utils.addMonth( newDate, currentInstallmentNumber-1 );
-            int month = Utils.getMonthNumber( newDate );
-            newDate = Utils.addDay( newDate, day-1 );
-            
-            while ( month <  Utils.getMonthNumber( newDate ) )
-                newDate = Utils.addDay( newDate, -1 );
-                    
-            dueDate =  newDate;
-        }
-        
-        updateRemainingAmounts(plan);
     }
 
-    public int getNumber() {
-        return number;
+    @Test
+    void outstandingTotal_shouldEqualOutstandingPrincipalPlusOutstandingInterests() {
+        Plan plan = new Plan(1000.0, 6, 10.0, new Date());
+        Installment any = plan.getInstallments().get(2);
+
+        assertEquals(any.getOutstandingPrincipal() + any.getOutstandingInterests(),
+                any.getOutstandingTotal(), 0.0001);
     }
 
-    public double getTotalAmount() {
-        return total;
+    @Test
+    void dueDateGetter_shouldNotExposeInternalMutableDate() {
+        Date firstDue = dateOf(2025, Calendar.JANUARY, 15);
+        Plan plan = new Plan(1000.0, 6, 10.0, firstDue);
+
+        Installment first = plan.getInstallments().get(0);
+
+        Date d1 = first.getDueDate();
+        long original = d1.getTime();
+
+        d1.setTime(original + 5L * 24 * 60 * 60 * 1000);
+
+        Date d2 = first.getDueDate();
+
+        assertEquals(original, d2.getTime(),
+                "getDueDate() should return a defensive copy, not the internal Date reference");
     }
 
-    public double getPrincipalAmount() {
-        return principal;
+    @Test
+    void plan_withSingleInstallment_shouldNotCrash() {
+        assertDoesNotThrow(() -> {
+            Plan plan = new Plan(1000.0, 1, 10.0, new Date());
+            assertEquals(1, plan.getInstallments().size());
+        });
     }
-
-    public double getInterestAmount() {
-        return interests;
-    }
-
-    public double getOutstandingPrincipal() {
-        return outstandingPrincipal;
-    }
-
-    public double getOutstandingInterests() {
-        return outstandingInterests;
-    }
-
-    public double getDebtPaid() {
-        return debtPaid;
-    }
-
-    public Date getDueDate() {
-        return dueDate;
-    }
-
-    @Override
-    public String toString() {
-        return 
-            "\nInstallment{#=" + number 
-             + ", dueDate=" + Utils.date2s(dueDate) 
-             + ", total=" + Utils.double2s(total) 
-             + ", principal=" + Utils.double2s(principal) 
-             + ", interests=" + Utils.double2s(interests) 
-             + ", debt=" + Utils.double2s(outstandingPrincipal) 
-             + ", interestsOuts=" + Utils.double2s(outstandingInterests) 
-             + '}';
-    }
-
-    protected void setInterestAmount(double d) {
-        this.interests = d ;
-    }
-
-    protected void setTotalAmount(double d) {
-        this.total = d ;
-    }
-
-    protected void setPrincipalAmount(double d) {
-        this.principal = d ;
-    }
-
-    public double getOutstandingTotal() {
-        return getOutstandingPrincipal() + getOutstandingInterests() ;
-    }
-
-    void updateRemainingAmounts(Plan plan) {
-        
-        /* updating
-        debtPaid (principal)
-        outstantingPrincipal
-        outstandingInterest
-        */
-        
-        Installment prevInstallment = null ;
-        if (number>1)prevInstallment=plan.getInstallments().get(number-2);
-        boolean firstIntallment = number==1 ;
-        boolean lastInstallment = plan!=null && number==plan.getNumberOfInstallments() ;
-        
-        if (firstIntallment){
-            debtPaid =  Utils.myRound( principal , plan.NUMBER_OF_DECIMALS ) ;
-            outstandingPrincipal = Utils.myRound( plan.getPrincipalAmount()-principal - plan.getAdvancePaymentAmount() , plan.NUMBER_OF_DECIMALS ) ;
-            outstandingInterests =  Utils.myRound( plan.getInterestAmount()  - interests , plan.NUMBER_OF_DECIMALS ) ;
-        }else{
-            debtPaid = Utils.myRound( prevInstallment.debtPaid + principal, plan.NUMBER_OF_DECIMALS );
-            outstandingPrincipal = Utils.myRound( prevInstallment.outstandingPrincipal - principal , plan.NUMBER_OF_DECIMALS );
-            outstandingInterests =  Utils.myRound( prevInstallment.outstandingInterests  - interests, plan.NUMBER_OF_DECIMALS );
-        }
-        
-        if (lastInstallment){
-            outstandingPrincipal = 0 ;
-            outstandingInterests = 0 ;
-        }
-        
-
-    }
-    
 }
